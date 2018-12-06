@@ -1,0 +1,4 @@
+*.hi
+*.o
+prog
+model.scad
