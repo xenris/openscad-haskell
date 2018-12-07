@@ -124,20 +124,20 @@ instance Enum Number where
     toEnum a = Number $ fromIntegral a
     fromEnum (Number n) = floor n
 
-p1 :: Number -> Number
-p1 n = n
+v1 :: Number -> Number
+v1 n = n
 
 -- TODO Work out why this doesn't work easily.
 --  (error: ambiguous type variable, but only one potential instance)
 type Point2d = (Number, Number)
 
-p2 :: Number -> Number -> Point2d
-p2 x y = (x, y) :: Point2d
+v2 :: Number -> Number -> Point2d
+v2 x y = (x, y) :: Point2d
 
 type Point3d = (Number, Number, Number)
 
-p3 :: Number -> Number -> Number -> Point3d
-p3 x y z = (x, y, z) :: Point3d
+v3 :: Number -> Number -> Number -> Point3d
+v3 x y z = (x, y, z) :: Point3d
 
 type Color = (Number, Number, Number, Number)
 
