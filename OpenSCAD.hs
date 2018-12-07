@@ -57,35 +57,27 @@ instance Fractional Number where
     fromRational n = Number $ fromRational n
 
 instance GenerateScad Number where
-    generateScad (Number n) = show n
-    -- generateScad (Add (Number a) (Number b)) = "(" ++ (generateScad $ Number (a + b)) ++ ")"
-    generateScad (Add a b) = "(" ++ (generateScad a) ++ " + " ++ (generateScad b) ++ ")"
-    -- generateScad (Sub (Number a) (Number b)) = "(" ++ (generateScad $ Number (a - b)) ++ ")"
-    generateScad (Sub a b) = "(" ++ (generateScad a) ++ " - " ++ (generateScad b) ++ ")"
-    -- generateScad (Mul (Number a) (Number b)) = "(" ++ (generateScad $ Number (a * b)) ++ ")"
-    generateScad (Mul a b) = "(" ++ (generateScad a) ++ " * " ++ (generateScad b) ++ ")"
-    -- generateScad (Neg (Number a)) = "(" ++ (generateScad $ Number (-a)) ++ ")"
-    generateScad (Neg a) = "-(" ++ (generateScad a) ++ ")"
-    -- generateScad (Div (Number a) (Number b)) = "(" ++ (generateScad $ Number (a / b)) ++ ")"
-    generateScad (Div a b) = "(" ++ (generateScad a) ++ " / " ++ (generateScad b) ++ ")"
-    -- generateScad (Recip (Number a)) = "(" ++ (generateScad $ Number (1.0 / a)) ++ ")"
-    generateScad (Recip a) = "(1.0 / " ++ (generateScad a) ++ ")"
-    -- generateScad (Abs (Number a)) = "(" ++ (generateScad $ Number (abs a)) ++ ")"
-    generateScad (Abs a) = "abs(" ++ (generateScad a) ++ ")"
-    -- generateScad (Sign (Number a)) = "(" ++ (generateScad $ Number (signum a)) ++ ")"
-    generateScad (Sign a) = "sign(" ++ (generateScad a) ++ ")"
-    generateScad (TimeStep) = "$t"
-    generateScad (Exp a) = "exp(" ++ (generateScad a) ++ ")"
-    generateScad (Log a) = "ln(" ++ (generateScad a) ++ ")"
-    generateScad (Sqrt a) = "sqrt(" ++ (generateScad a) ++ ")"
-    generateScad (Pow a b) = "pow(" ++ (generateScad a) ++ ")"
+    generateScad i (Number n) = show n
+    generateScad i (Add a b) = (indent i) ++ "(" ++ (generateScad 0 a) ++ " + " ++ (generateScad 0 b) ++ ")"
+    generateScad i (Sub a b) = (indent i) ++ "(" ++ (generateScad 0 a) ++ " - " ++ (generateScad 0 b) ++ ")"
+    generateScad i (Mul a b) = (indent i) ++ "(" ++ (generateScad 0 a) ++ " * " ++ (generateScad 0 b) ++ ")"
+    generateScad i (Neg a) = (indent i) ++ "-(" ++ (generateScad 0 a) ++ ")"
+    generateScad i (Div a b) = (indent i) ++ "(" ++ (generateScad 0 a) ++ " / " ++ (generateScad 0 b) ++ ")"
+    generateScad i (Recip a) = (indent i) ++ "(1.0 / " ++ (generateScad 0 a) ++ ")"
+    generateScad i (Abs a) = (indent i) ++ "abs(" ++ (generateScad 0 a) ++ ")"
+    generateScad i (Sign a) = (indent i) ++ "sign(" ++ (generateScad 0 a) ++ ")"
+    generateScad i (TimeStep) = (indent i) ++ "$t"
+    generateScad i (Exp a) = (indent i) ++ "exp(" ++ (generateScad 0 a) ++ ")"
+    generateScad i (Log a) = (indent i) ++ "ln(" ++ (generateScad 0 a) ++ ")"
+    generateScad i (Sqrt a) = (indent i) ++ "sqrt(" ++ (generateScad 0 a) ++ ")"
+    generateScad i (Pow a b) = (indent i) ++ "pow(" ++ (generateScad 0 a) ++ ")"
+    generateScad i (Sin a) = (indent i) ++ "sin(" ++ (generateScad 0 a) ++ ")"
+    generateScad i (Cos a) = (indent i) ++ "cos(" ++ (generateScad 0 a) ++ ")"
+    generateScad i (Tan a) = (indent i) ++ "tan(" ++ (generateScad 0 a) ++ ")"
+    generateScad i (Asin a) = (indent i) ++ "asin(" ++ (generateScad 0 a) ++ ")"
+    generateScad i (Acos a) = (indent i) ++ "acos(" ++ (generateScad 0 a) ++ ")"
+    generateScad i (Atan a) = (indent i) ++ "atan(" ++ (generateScad 0 a) ++ ")"
     -- generateScad (LogBase a b) = "logBase(" ++ (generateScad a) ++ ")"
-    generateScad (Sin a) = "sin(" ++ (generateScad a) ++ ")"
-    generateScad (Cos a) = "cos(" ++ (generateScad a) ++ ")"
-    generateScad (Tan a) = "tan(" ++ (generateScad a) ++ ")"
-    generateScad (Asin a) = "asin(" ++ (generateScad a) ++ ")"
-    generateScad (Acos a) = "acos(" ++ (generateScad a) ++ ")"
-    generateScad (Atan a) = "atan(" ++ (generateScad a) ++ ")"
     -- generateScad (Sinh a) = "sinh(" ++ (generateScad a) ++ ")"
     -- generateScad (Cosh a) = "cosh(" ++ (generateScad a) ++ ")"
     -- generateScad (Tanh a) = "tanh(" ++ (generateScad a) ++ ")"
@@ -197,7 +189,7 @@ class Movable a b where
     mirror :: a -> b -> a
 
 class GenerateScad a where
-    generateScad :: a -> String
+    generateScad :: Int -> a -> String
 
 data Shape2d
     = Circle
@@ -256,10 +248,10 @@ data ExtrudeStyle
     deriving (Show)
 
 render :: (GenerateScad a) => a -> Int -> String
-render s l = "$fn = " ++ (show l) ++ ";\nrender() {\n" ++ (generateScad s) ++ "}\n"
+render s l = "$fn = " ++ (show l) ++ ";\nrender() {\n" ++ (generateScad 1 s) ++ "}\n"
 
 preview :: (GenerateScad a) => a -> Int -> String
-preview s l = "$fn = " ++ (show l) ++ ";\n" ++ (generateScad s) ++ "\n"
+preview s l = "$fn = " ++ (show l) ++ ";\n" ++ (generateScad 0 s) ++ "\n"
 
 instance GenerateScad Shape2d where
     generateScad = generateScad2d
@@ -316,27 +308,27 @@ hull2d (Hull2d as) b = Hull2d (as ++ [b])
 hull2d a (Hull2d bs) = Hull2d ([a] ++ bs)
 hull2d a b = Hull2d [a, b]
 
-generateScad2d :: Shape2d -> String
-generateScad2d (Circle) = "circle();\n"
-generateScad2d (Square) = "square(center = true);\n"
-generateScad2d (Polygon ps) = "polygon(" ++ (showPoint2ds ps) ++ ");\n"
-generateScad2d (Text s) = "text(" ++ (show s) ++ ");\n"
-generateScad2d (Union2d ss) = "union() {\n" ++ (concatMap generateScad2d ss) ++ "}\n"
-generateScad2d (Difference2d ss) = "difference() {\n" ++ (concatMap generateScad2d ss) ++ "}\n"
-generateScad2d (Intersection2d ss) = "intersection() {\n" ++ (concatMap generateScad2d ss) ++ "}\n"
-generateScad2d (Minkowski2d ss) = "minkowski() {\n" ++ (concatMap generateScad2d ss) ++ "}\n"
-generateScad2d (Hull2d ss) = "hull() {\n" ++ (concatMap generateScad2d ss) ++ "}\n"
-generateScad2d (Offset s n Extend) = "offset(delta = " ++ (show n) ++ ") {\n" ++ (generateScad2d s) ++ "}\n"
-generateScad2d (Offset s n Round) = "offset(r = " ++ (show n) ++ ") {\n" ++ (generateScad2d s) ++ "}\n"
-generateScad2d (Offset s n Chamfer) = "offset(delta = " ++ (show n) ++ ", chamfer = true) {\n" ++ (generateScad2d s) ++ "}\n"
-generateScad2d (Translate2d s v) = "translate(" ++ (showPoint2d v) ++ ") {\n" ++ (generateScad2d s) ++ "}\n"
-generateScad2d (Rotate2d s v) = "rotate(" ++ (showPoint2d v) ++ ") {\n" ++ (generateScad2d s) ++ "}\n"
-generateScad2d (Scale2d s v) = "scale(" ++ (showPoint2d $ abs2 v) ++ ") {\n" ++ (generateScad2d s) ++ "}\n"
-generateScad2d (Resize2d s v) = "resize(" ++ (showPoint2d v) ++ ") {\n" ++ (generateScad2d s) ++ "}\n"
-generateScad2d (Mirror2d s v) = "mirror(" ++ (showPoint2d v) ++ ") {\n" ++ (generateScad2d s) ++ "}\n"
-generateScad2d (Color2d s c) = "color(" ++ (showColor c) ++ ") {\n" ++ (generateScad2d s) ++ "}\n"
-generateScad2d (Slice s Project) = "projection() {\n" ++ (generateScad3d s) ++ "}\n"
-generateScad2d (Slice s Cut) = "projection(cut = true) {\n" ++ (generateScad3d s) ++ "}\n"
+generateScad2d :: Int -> Shape2d -> String
+generateScad2d i (Circle) = (indent i) ++ "circle();\n"
+generateScad2d i (Square) = (indent i) ++ "square(center = true);\n"
+generateScad2d i (Polygon ps) = (indent i) ++ "polygon(" ++ (showPoint2ds ps) ++ ");\n"
+generateScad2d i (Text s) = (indent i) ++ "text(" ++ (show s) ++ ");\n"
+generateScad2d i (Union2d ss) = (indent i) ++ "union() {\n" ++ (concatMap (generateScad2d (i + 1)) ss) ++ (indent i) ++ "}\n"
+generateScad2d i (Difference2d ss) = (indent i) ++ "difference() {\n" ++ (concatMap (generateScad2d (i + 1)) ss) ++ (indent i) ++ "}\n"
+generateScad2d i (Intersection2d ss) = (indent i) ++ "intersection() {\n" ++ (concatMap (generateScad2d (i + 1)) ss) ++ (indent i) ++ "}\n"
+generateScad2d i (Minkowski2d ss) = (indent i) ++ "minkowski() {\n" ++ (concatMap (generateScad2d (i + 1)) ss) ++ (indent i) ++ "}\n"
+generateScad2d i (Hull2d ss) = (indent i) ++ "hull() {\n" ++ (concatMap (generateScad2d (i + 1)) ss) ++ (indent i) ++ "}\n"
+generateScad2d i (Offset s n Extend) = (indent i) ++ "offset(delta = " ++ (show n) ++ ") {\n" ++ (generateScad2d (i + 1) s) ++ (indent i) ++ "}\n"
+generateScad2d i (Offset s n Round) = (indent i) ++ "offset(r = " ++ (show n) ++ ") {\n" ++ (generateScad2d (i + 1) s) ++ (indent i) ++ "}\n"
+generateScad2d i (Offset s n Chamfer) = (indent i) ++ "offset(delta = " ++ (show n) ++ ", chamfer = true) {\n" ++ (generateScad2d (i + 1) s) ++ (indent i) ++ "}\n"
+generateScad2d i (Translate2d s v) = (indent i) ++ "translate(" ++ (showPoint2d v) ++ ") {\n" ++ (generateScad2d (i + 1) s) ++ (indent i) ++ "}\n"
+generateScad2d i (Rotate2d s v) = (indent i) ++ "rotate(" ++ (showPoint2d v) ++ ") {\n" ++ (generateScad2d (i + 1) s) ++ (indent i) ++ "}\n"
+generateScad2d i (Scale2d s v) = (indent i) ++ "scale(" ++ (showPoint2d $ abs2 v) ++ ") {\n" ++ (generateScad2d (i + 1) s) ++ (indent i) ++ "}\n"
+generateScad2d i (Resize2d s v) = (indent i) ++ "resize(" ++ (showPoint2d v) ++ ") {\n" ++ (generateScad2d (i + 1) s) ++ (indent i) ++ "}\n"
+generateScad2d i (Mirror2d s v) = (indent i) ++ "mirror(" ++ (showPoint2d v) ++ ") {\n" ++ (generateScad2d (i + 1) s) ++ (indent i) ++ "}\n"
+generateScad2d i (Color2d s c) = (indent i) ++ "color(" ++ (showColor c) ++ ") {\n" ++ (generateScad2d (i + 1) s) ++ (indent i) ++ "}\n"
+generateScad2d i (Slice s Project) = (indent i) ++ "projection() {\n" ++ (generateScad3d (i + 1) s) ++ (indent i) ++ "}\n"
+generateScad2d i (Slice s Cut) = (indent i) ++ "projection(cut = true) {\n" ++ (generateScad3d (i + 1) s) ++ (indent i) ++ "}\n"
 
 instance GenerateScad Shape3d where
     generateScad = generateScad3d
@@ -393,34 +385,34 @@ hull3d (Hull3d as) b = Hull3d (as ++ [b])
 hull3d a (Hull3d bs) = Hull3d ([a] ++ bs)
 hull3d a b = Hull3d [a, b]
 
-generateScad3d :: Shape3d -> String
-generateScad3d (Sphere) = "sphere(d = 1);\n"
-generateScad3d (Cube) = "cube(center = true);\n"
-generateScad3d (Cylinder) = "cylinder(d = 1, h = 1, center = true);\n"
-generateScad3d (Polyhedron ps fs) = "polyhedron(" ++ (showPoint3ds ps) ++ ", " ++ (show fs) ++ ");\n"
-generateScad3d (Extrude s (Straight l)) = "linear_extrude(height = " ++ (show l) ++ ") {\n" ++ (generateScad2d s) ++ "}\n"
-generateScad3d (Extrude s (Twist l t)) = "linear_extrude(height = " ++ (show l) ++ ", twist = " ++ (show t) ++ ") {\n" ++ (generateScad2d s) ++ "}\n"
-generateScad3d (Extrude s (Rotate)) = "rotate_extrude() {\n" ++ (generateScad2d s) ++ "}\n" -- TODO subtract everything below the x axis
-generateScad3d (Union3d ss) = "union() {\n" ++ (concatMap generateScad3d ss) ++ "}\n"
-generateScad3d (Difference3d ss) = "difference() {\n" ++ (concatMap generateScad3d ss) ++ "}\n"
-generateScad3d (Intersection3d ss) = "intersection() {\n" ++ (concatMap generateScad3d ss) ++ "}\n"
-generateScad3d (Minkowski3d ss) = "minkowski() {\n" ++ (concatMap generateScad3d ss) ++ "}\n"
-generateScad3d (Hull3d ss) = "hull() {\n" ++ (concatMap generateScad3d ss) ++ "}\n"
-generateScad3d (Translate3d s v) = "translate(" ++ (showPoint3d v) ++ ") {\n" ++ (generateScad3d s) ++ "}\n"
-generateScad3d (Rotate3d s v) = "rotate(" ++ (showPoint3d v) ++ ") {\n" ++ (generateScad3d s) ++ "}\n"
-generateScad3d (Scale3d s v) = "scale(" ++ (showPoint3d $ abs3 v) ++ ") {\n" ++ (generateScad3d s) ++ "}\n"
-generateScad3d (Resize3d s v) = "resize(" ++ (showPoint3d v) ++ ") {\n" ++ (generateScad3d s) ++ "}\n"
-generateScad3d (Mirror3d s v) = "mirror(" ++ (showPoint3d v) ++ ") {\n" ++ (generateScad3d s) ++ "}\n"
-generateScad3d (Color3d s c) = "color(" ++ (showColor c) ++ ") {\n" ++ (generateScad3d s) ++ "}\n"
+generateScad3d :: Int -> Shape3d -> String
+generateScad3d i (Sphere) = (indent i) ++ "sphere(d = 1);\n"
+generateScad3d i (Cube) = (indent i) ++ "cube(center = true);\n"
+generateScad3d i (Cylinder) = (indent i) ++ "cylinder(d = 1, h = 1, center = true);\n"
+generateScad3d i (Polyhedron ps fs) = (indent i) ++ "polyhedron(" ++ (showPoint3ds ps) ++ ", " ++ (show fs) ++ ");\n"
+generateScad3d i (Extrude s (Straight l)) = (indent i) ++ "linear_extrude(height = " ++ (show l) ++ ") {\n" ++ (generateScad2d (i + 1) s) ++ (indent i) ++ "}\n"
+generateScad3d i (Extrude s (Twist l t)) = (indent i) ++ "linear_extrude(height = " ++ (show l) ++ ", twist = " ++ (show t) ++ ") {\n" ++ (generateScad2d (i + 1) s) ++ (indent i) ++ "}\n"
+generateScad3d i (Extrude s (Rotate)) = (indent i) ++ "rotate_extrude() {\n" ++ (generateScad2d (i + 1) s) ++ (indent i) ++ "}\n" -- TODO subtract everything below the x axis
+generateScad3d i (Union3d ss) = (indent i) ++ "union() {\n" ++ (concatMap (generateScad3d (i + 1)) ss) ++ (indent i) ++ "}\n"
+generateScad3d i (Difference3d ss) = (indent i) ++ "difference() {\n" ++ (concatMap (generateScad3d (i + 1)) ss) ++ (indent i) ++ "}\n"
+generateScad3d i (Intersection3d ss) = (indent i) ++ "intersection() {\n" ++ (concatMap (generateScad3d (i + 1)) ss) ++ (indent i) ++ "}\n"
+generateScad3d i (Minkowski3d ss) = (indent i) ++ "minkowski() {\n" ++ (concatMap (generateScad3d (i + 1)) ss) ++ (indent i) ++ "}\n"
+generateScad3d i (Hull3d ss) = (indent i) ++ "hull() {\n" ++ (concatMap (generateScad3d (i + 1)) ss) ++ (indent i) ++ "}\n"
+generateScad3d i (Translate3d s v) = (indent i) ++ "translate(" ++ (showPoint3d v) ++ ") {\n" ++ (generateScad3d (i + 1) s) ++ (indent i) ++ "}\n"
+generateScad3d i (Rotate3d s v) = (indent i) ++ "rotate(" ++ (showPoint3d v) ++ ") {\n" ++ (generateScad3d (i + 1) s) ++ (indent i) ++ "}\n"
+generateScad3d i (Scale3d s v) = (indent i) ++ "scale(" ++ (showPoint3d $ abs3 v) ++ ") {\n" ++ (generateScad3d (i + 1) s) ++ (indent i) ++ "}\n"
+generateScad3d i (Resize3d s v) = (indent i) ++ "resize(" ++ (showPoint3d v) ++ ") {\n" ++ (generateScad3d (i + 1) s) ++ (indent i) ++ "}\n"
+generateScad3d i (Mirror3d s v) = (indent i) ++ "mirror(" ++ (showPoint3d v) ++ ") {\n" ++ (generateScad3d (i + 1) s) ++ (indent i) ++ "}\n"
+generateScad3d i (Color3d s c) = (indent i) ++ "color(" ++ (showColor c) ++ ") {\n" ++ (generateScad3d (i + 1) s) ++ (indent i) ++ "}\n"
 
 showPoint2d :: Point2d -> String
-showPoint2d (x, y) = "[" ++ (generateScad x) ++ ", " ++ (generateScad y) ++ "]"
+showPoint2d (x, y) = "[" ++ (generateScad 0 x) ++ ", " ++ (generateScad 0 y) ++ "]"
 
 showPoint2ds :: [Point2d] -> String
 showPoint2ds = replaceBraces . show
 
 showPoint3d :: Point3d -> String
-showPoint3d (x, y, z) = "[" ++ (generateScad x) ++ ", " ++ (generateScad y) ++ ", " ++ (generateScad z) ++ "]"
+showPoint3d (x, y, z) = "[" ++ (generateScad 0 x) ++ ", " ++ (generateScad 0 y) ++ ", " ++ (generateScad 0 z) ++ "]"
 
 showPoint3ds :: [Point3d] -> String
 showPoint3ds = replaceBraces . show
@@ -432,7 +424,7 @@ replaceBraces (')':xs) = ']' : (replaceBraces xs)
 replaceBraces (x:xs) = x : (replaceBraces xs)
 
 showColor :: Color -> String
-showColor (r, g, b, a) = "[" ++ (generateScad r) ++ ", " ++ (generateScad g) ++ ", " ++ (generateScad b) ++ ", " ++ (generateScad a) ++ "]"
+showColor (r, g, b, a) = "[" ++ (generateScad 0 r) ++ ", " ++ (generateScad 0 g) ++ ", " ++ (generateScad 0 b) ++ ", " ++ (generateScad 0 a) ++ "]"
 
 abs2 :: Point2d -> Point2d
 abs2 (x, y) = (abs x, abs y)
@@ -457,3 +449,6 @@ cylinder = Cylinder
 
 cone :: Shape3d
 cone = Extrude (Polygon [(0, -0.5), (0, 0.5), (0.5, -0.5)]) Rotate
+
+indent :: Int -> String
+indent i = replicate i ' '
