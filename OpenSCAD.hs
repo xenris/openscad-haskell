@@ -507,3 +507,9 @@ rtod3 (a, b, c) = (rtod a, rtod b, rtod c)
 
 dtor :: Number -> Number
 dtor r = r * ((2 * pi) / 360)
+
+slice :: Shape3d -> SliceStyle -> Shape2d
+slice = Slice
+
+extrude :: Shape2d -> ExtrudeStyle -> Shape3d
+extrude = Extrude
