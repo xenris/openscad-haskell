@@ -4,19 +4,151 @@
 
 module OpenSCAD where
 
+data Number
+    = Number Double
+    | Add Number Number
+    | Sub Number Number
+    | Mul Number Number
+    | Neg Number
+    | Div Number Number
+    | Recip Number
+    | Abs Number
+    | Sign Number
+    | TimeStep
+    | Exp Number
+    | Log Number
+    | Sqrt Number
+    | Pow Number Number
+    | LogBase Number Number
+    | Sin Number
+    | Cos Number
+    | Tan Number
+    | Asin Number
+    | Acos Number
+    | Atan Number
+    | Sinh Number
+    | Cosh Number
+    | Tanh Number
+    | Asinh Number
+    | Acosh Number
+    | Atanh Number
+    deriving (Show)
+
+instance Num Number where
+    (+) (Number a) (Number b) = Number (a + b)
+    (+) a b = Add a b
+    (-) (Number a) (Number b) = Number (a - b)
+    (-) a b = Sub a b
+    (*) (Number a) (Number b) = Number (a * b)
+    (*) a b = Mul a b
+    negate (Number a) = Number (-a)
+    negate a = Neg a
+    abs (Number a) = Number (abs a)
+    abs a = Abs a
+    signum (Number a) = Number (signum a)
+    signum a = Sign a
+    fromInteger n = Number $ fromInteger n
+
+instance Fractional Number where
+    (/) (Number a) (Number b) = Number (a / b)
+    (/) a b = Div a b
+    recip (Number a) = Number (recip a)
+    recip a = Recip a
+    fromRational n = Number $ fromRational n
+
+instance GenerateScad Number where
+    generateScad (Number n) = show n
+    -- generateScad (Add (Number a) (Number b)) = "(" ++ (generateScad $ Number (a + b)) ++ ")"
+    generateScad (Add a b) = "(" ++ (generateScad a) ++ " + " ++ (generateScad b) ++ ")"
+    -- generateScad (Sub (Number a) (Number b)) = "(" ++ (generateScad $ Number (a - b)) ++ ")"
+    generateScad (Sub a b) = "(" ++ (generateScad a) ++ " - " ++ (generateScad b) ++ ")"
+    -- generateScad (Mul (Number a) (Number b)) = "(" ++ (generateScad $ Number (a * b)) ++ ")"
+    generateScad (Mul a b) = "(" ++ (generateScad a) ++ " * " ++ (generateScad b) ++ ")"
+    -- generateScad (Neg (Number a)) = "(" ++ (generateScad $ Number (-a)) ++ ")"
+    generateScad (Neg a) = "-(" ++ (generateScad a) ++ ")"
+    -- generateScad (Div (Number a) (Number b)) = "(" ++ (generateScad $ Number (a / b)) ++ ")"
+    generateScad (Div a b) = "(" ++ (generateScad a) ++ " / " ++ (generateScad b) ++ ")"
+    -- generateScad (Recip (Number a)) = "(" ++ (generateScad $ Number (1.0 / a)) ++ ")"
+    generateScad (Recip a) = "(1.0 / " ++ (generateScad a) ++ ")"
+    -- generateScad (Abs (Number a)) = "(" ++ (generateScad $ Number (abs a)) ++ ")"
+    generateScad (Abs a) = "abs(" ++ (generateScad a) ++ ")"
+    -- generateScad (Sign (Number a)) = "(" ++ (generateScad $ Number (signum a)) ++ ")"
+    generateScad (Sign a) = "sign(" ++ (generateScad a) ++ ")"
+    generateScad (TimeStep) = "$t"
+    generateScad (Exp a) = "exp(" ++ (generateScad a) ++ ")"
+    generateScad (Log a) = "ln(" ++ (generateScad a) ++ ")"
+    generateScad (Sqrt a) = "sqrt(" ++ (generateScad a) ++ ")"
+    generateScad (Pow a b) = "pow(" ++ (generateScad a) ++ ")"
+    -- generateScad (LogBase a b) = "logBase(" ++ (generateScad a) ++ ")"
+    generateScad (Sin a) = "sin(" ++ (generateScad a) ++ ")"
+    generateScad (Cos a) = "cos(" ++ (generateScad a) ++ ")"
+    generateScad (Tan a) = "tan(" ++ (generateScad a) ++ ")"
+    generateScad (Asin a) = "asin(" ++ (generateScad a) ++ ")"
+    generateScad (Acos a) = "acos(" ++ (generateScad a) ++ ")"
+    generateScad (Atan a) = "atan(" ++ (generateScad a) ++ ")"
+    -- generateScad (Sinh a) = "sinh(" ++ (generateScad a) ++ ")"
+    -- generateScad (Cosh a) = "cosh(" ++ (generateScad a) ++ ")"
+    -- generateScad (Tanh a) = "tanh(" ++ (generateScad a) ++ ")"
+    -- generateScad (Asinh a) = "asinh(" ++ (generateScad a) ++ ")"
+    -- generateScad (Acosh a) = "acosh(" ++ (generateScad a) ++ ")"
+    -- generateScad (Atanh a) = "atanh(" ++ (generateScad a) ++ ")"
+
+instance Floating Number where
+    pi = Number pi
+    exp = Exp
+    log = Log
+    sqrt = Sqrt
+    (**) = Pow
+    logBase = LogBase
+    sin = Sin . rtod
+    cos = Cos . rtod
+    tan = Tan . rtod
+    asin = dtor . Asin
+    acos = dtor . Acos
+    atan = dtor . Atan
+    sinh = Sinh
+    cosh = Cosh
+    tanh = Tanh
+    asinh = Asinh
+    acosh = Acosh
+    atanh = Atanh
+
+-- log
+-- atan2
+-- floor
+-- round
+-- ceil
+-- len
+-- let
+-- rands
+-- min
+-- max
+
+instance Enum Number where
+    succ a = a + 1
+    pred a = a - 1
+    toEnum a = Number $ fromIntegral a
+    fromEnum (Number n) = floor n
+
+rtod :: Number -> Number
+rtod r = r * (360 / (2 * pi))
+
+dtor :: Number -> Number
+dtor r = r * ((2 * pi) / 360)
+
 -- TODO Work out why this doesn't work easily.
 --  (error: ambiguous type variable, but only one potential instance)
-type Point2d = (Double, Double)
+type Point2d = (Number, Number)
 
-p2 :: Double -> Double -> Point2d
+p2 :: Number -> Number -> Point2d
 p2 x y = (x, y) :: Point2d
 
-type Point3d = (Double, Double, Double)
+type Point3d = (Number, Number, Number)
 
-p3 :: Double -> Double -> Double -> Point3d
+p3 :: Number -> Number -> Number -> Point3d
 p3 x y z = (x, y, z) :: Point3d
 
-type Color = (Float, Float, Float, Float)
+type Color = (Number, Number, Number, Number)
 
 black :: Color
 black = (0, 0, 0, 1)
@@ -80,7 +212,7 @@ data Shape2d
     | Offset Shape2d Float OffsetStyle
     | Translate2d Shape2d Point2d
     | Rotate2d Shape2d Point2d
-    | Scale2d Shape2d Point2d -- TODO error on negative scaling, as apparently doesn't work.
+    | Scale2d Shape2d Point2d
     | Resize2d Shape2d Point2d
     | Mirror2d Shape2d Point2d
     | Color2d Shape2d Color
@@ -124,10 +256,10 @@ data ExtrudeStyle
     deriving (Show)
 
 render :: (GenerateScad a) => a -> Int -> String
-render s l = "$fn=" ++ (show l) ++ ";\nrender() {\n" ++ (generateScad s) ++ "}\n"
+render s l = "$fn = " ++ (show l) ++ ";\nrender() {\n" ++ (generateScad s) ++ "}\n"
 
 preview :: (GenerateScad a) => a -> Int -> String
-preview s l = "$fn=" ++ (show l) ++ ";\n" ++ (generateScad s) ++ "\n"
+preview s l = "$fn = " ++ (show l) ++ ";\n" ++ (generateScad s) ++ "\n"
 
 instance GenerateScad Shape2d where
     generateScad = generateScad2d
@@ -282,13 +414,13 @@ generateScad3d (Mirror3d s v) = "mirror(" ++ (showPoint3d v) ++ ") {\n" ++ (gene
 generateScad3d (Color3d s c) = "color(" ++ (showColor c) ++ ") {\n" ++ (generateScad3d s) ++ "}\n"
 
 showPoint2d :: Point2d -> String
-showPoint2d (x, y) = "[" ++ (show x) ++ ", " ++ (show y) ++ "]"
+showPoint2d (x, y) = "[" ++ (generateScad x) ++ ", " ++ (generateScad y) ++ "]"
 
 showPoint2ds :: [Point2d] -> String
 showPoint2ds = replaceBraces . show
 
 showPoint3d :: Point3d -> String
-showPoint3d (x, y, z) = "[" ++ (show x) ++ ", " ++ (show y) ++ ", " ++ (show z) ++ "]"
+showPoint3d (x, y, z) = "[" ++ (generateScad x) ++ ", " ++ (generateScad y) ++ ", " ++ (generateScad z) ++ "]"
 
 showPoint3ds :: [Point3d] -> String
 showPoint3ds = replaceBraces . show
@@ -300,7 +432,7 @@ replaceBraces (')':xs) = ']' : (replaceBraces xs)
 replaceBraces (x:xs) = x : (replaceBraces xs)
 
 showColor :: Color -> String
-showColor (r, g, b, a) = "[" ++ (show r) ++ ", " ++ (show g) ++ ", " ++ (show b) ++ ", " ++ (show a) ++ "]"
+showColor (r, g, b, a) = "[" ++ (generateScad r) ++ ", " ++ (generateScad g) ++ ", " ++ (generateScad b) ++ ", " ++ (generateScad a) ++ "]"
 
 abs2 :: Point2d -> Point2d
 abs2 (x, y) = (abs x, abs y)

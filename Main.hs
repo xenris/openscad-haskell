@@ -12,16 +12,20 @@ main = writeFile "model.scad" (preview model 40)
 
 -- model = (sphere `resize` (p3 1 2 2)) -. (sphere `resize` (p3 1.1 0.9 0.9))
 
-size = 40
+model = sphere `translate` (p3 (cos (2 * pi * TimeStep)) (sin (2 * pi * TimeStep)) 1)
+-- model = sphere `translate` (p3 (rtod 3) 0 0)
 
-model :: Shape3d
-model = (pyramid `color` green) -. (hole `color` blue)
-    where
-        pyramid = (union $ map (\ i -> (layer i) `translate` (p3 0 0 (i * size / 10))) [0..8]) `translate` (p3 0 0 2)
-        hole = (cylinder `resize` (p3 2 2 10)) `translate` (p3 0 0 (size * 0.88))
-        layer i = cube `resize` (p3 (w i) (w i) (h i))
-        w i = size - (i * 4.3)
-        h i = size / 10
+
+-- size = 40
+
+-- model :: Shape3d
+-- model = (pyramid `color` green) -. (hole `color` blue)
+--     where
+--         pyramid = (union $ map (\ i -> (layer i) `translate` (p3 0 0 (i * size / 10))) [0..8]) `translate` (p3 0 0 2)
+--         hole = (cylinder `resize` (p3 2 2 10)) `translate` (p3 0 0 (size * 0.88))
+--         layer i = cube `resize` (p3 (w i) (w i) (h i))
+--         w i = size - (i * 4.3)
+--         h i = size / 10
 
 -- model = Model3d $ extrude ((square 20) +. (translate2d (circle 5) 10 10)) 10
 -- model = Model2d $ (square 20) +. (translate2d (circle 5) 10 10)
