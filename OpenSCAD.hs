@@ -122,12 +122,6 @@ instance Enum Number where
     toEnum a = Number $ fromIntegral a
     fromEnum (Number n) = floor n
 
-rtod :: Number -> Number
-rtod r = r * (360 / (2 * pi))
-
-dtor :: Number -> Number
-dtor r = r * ((2 * pi) / 360)
-
 -- TODO Work out why this doesn't work easily.
 --  (error: ambiguous type variable, but only one potential instance)
 type Point2d = (Number, Number)
@@ -273,7 +267,7 @@ instance Colorable Shape2d where
 
 instance Movable Shape2d Point2d where
     translate = Translate2d
-    rotate = Rotate2d
+    rotate s = Rotate2d s . rtod2
     scale = Scale2d
     resize = Resize2d
     mirror = Mirror2d
@@ -350,7 +344,7 @@ instance Colorable Shape3d where
 
 instance Movable Shape3d Point3d where
     translate = Translate3d
-    rotate = Rotate3d
+    rotate s = Rotate3d s . rtod3
     scale = Scale3d
     resize = Resize3d
     mirror = Mirror3d
@@ -452,3 +446,15 @@ cone = Extrude (Polygon [(0, -0.5), (0, 0.5), (0.5, -0.5)]) Rotate
 
 indent :: Int -> String
 indent i = replicate i ' '
+
+rtod :: Number -> Number
+rtod r = r * (360 / (2 * pi))
+
+rtod2 :: Point2d -> Point2d
+rtod2 (a, b) = (rtod a, rtod b)
+
+rtod3 :: Point3d -> Point3d
+rtod3 (a, b, c) = (rtod a, rtod b, rtod c)
+
+dtor :: Number -> Number
+dtor r = r * ((2 * pi) / 360)
