@@ -122,6 +122,9 @@ instance Enum Number where
     toEnum a = Number $ fromIntegral a
     fromEnum (Number n) = floor n
 
+p1 :: Number -> Number
+p1 n = n
+
 -- TODO Work out why this doesn't work easily.
 --  (error: ambiguous type variable, but only one potential instance)
 type Point2d = (Number, Number)
@@ -177,10 +180,12 @@ class Combinable a where
 
 class Movable a b where
     translate :: a -> b -> a
-    rotate :: a -> b -> a
     scale :: a -> b -> a
     resize :: a -> b -> a
     mirror :: a -> b -> a
+
+class Rotatable a b where
+    rotate :: a -> b -> a
 
 class GenerateScad a where
     generateScad :: Int -> a -> String
@@ -197,7 +202,7 @@ data Shape2d
     | Hull2d [Shape2d]
     | Offset Shape2d Float OffsetStyle
     | Translate2d Shape2d Point2d
-    | Rotate2d Shape2d Point2d
+    | Rotate2d Shape2d Number
     | Scale2d Shape2d Point2d
     | Resize2d Shape2d Point2d
     | Mirror2d Shape2d Point2d
@@ -228,7 +233,7 @@ data Shape3d
     | Minkowski3d [Shape3d]
     | Hull3d [Shape3d]
     | Translate3d Shape3d Point3d
-    | Rotate3d Shape3d Point3d
+    | Rotate3d Shape3d Number Point3d
     | Scale3d Shape3d Point3d
     | Resize3d Shape3d Point3d
     | Mirror3d Shape3d Point3d
@@ -267,10 +272,12 @@ instance Colorable Shape2d where
 
 instance Movable Shape2d Point2d where
     translate = Translate2d
-    rotate s = Rotate2d s . rtod2
     scale = Scale2d
     resize = Resize2d
     mirror = Mirror2d
+
+instance Rotatable Shape2d Number where
+    rotate s a = Rotate2d s (rtod a)
 
 union2d :: Shape2d -> Shape2d -> Shape2d
 union2d (Union2d as) (Union2d bs) = Union2d (as ++ bs)
@@ -316,7 +323,7 @@ generateScad2d i (Offset s n Extend) = (indent i) ++ "offset(delta = " ++ (show 
 generateScad2d i (Offset s n Round) = (indent i) ++ "offset(r = " ++ (show n) ++ ") {\n" ++ (generateScad2d (i + 1) s) ++ (indent i) ++ "}\n"
 generateScad2d i (Offset s n Chamfer) = (indent i) ++ "offset(delta = " ++ (show n) ++ ", chamfer = true) {\n" ++ (generateScad2d (i + 1) s) ++ (indent i) ++ "}\n"
 generateScad2d i (Translate2d s v) = (indent i) ++ "translate(" ++ (showPoint2d v) ++ ") {\n" ++ (generateScad2d (i + 1) s) ++ (indent i) ++ "}\n"
-generateScad2d i (Rotate2d s v) = (indent i) ++ "rotate(" ++ (showPoint2d v) ++ ") {\n" ++ (generateScad2d (i + 1) s) ++ (indent i) ++ "}\n"
+generateScad2d i (Rotate2d s n) = (indent i) ++ "rotate(" ++ (generateScad 0 n) ++ ") {\n" ++ (generateScad2d (i + 1) s) ++ (indent i) ++ "}\n"
 generateScad2d i (Scale2d s v) = (indent i) ++ "scale(" ++ (showPoint2d $ abs2 v) ++ ") {\n" ++ (generateScad2d (i + 1) s) ++ (indent i) ++ "}\n"
 generateScad2d i (Resize2d s v) = (indent i) ++ "resize(" ++ (showPoint2d v) ++ ") {\n" ++ (generateScad2d (i + 1) s) ++ (indent i) ++ "}\n"
 generateScad2d i (Mirror2d s v) = (indent i) ++ "mirror(" ++ (showPoint2d v) ++ ") {\n" ++ (generateScad2d (i + 1) s) ++ (indent i) ++ "}\n"
@@ -344,10 +351,12 @@ instance Colorable Shape3d where
 
 instance Movable Shape3d Point3d where
     translate = Translate3d
-    rotate s = Rotate3d s . rtod3
     scale = Scale3d
     resize = Resize3d
     mirror = Mirror3d
+
+instance Rotatable Shape3d (Number, Point3d) where
+    rotate s (a, v) = Rotate3d s (rtod a) v
 
 union3d :: Shape3d -> Shape3d -> Shape3d
 union3d (Union3d as) (Union3d bs) = Union3d (as ++ bs)
@@ -393,7 +402,7 @@ generateScad3d i (Intersection3d ss) = (indent i) ++ "intersection() {\n" ++ (co
 generateScad3d i (Minkowski3d ss) = (indent i) ++ "minkowski() {\n" ++ (concatMap (generateScad3d (i + 1)) ss) ++ (indent i) ++ "}\n"
 generateScad3d i (Hull3d ss) = (indent i) ++ "hull() {\n" ++ (concatMap (generateScad3d (i + 1)) ss) ++ (indent i) ++ "}\n"
 generateScad3d i (Translate3d s v) = (indent i) ++ "translate(" ++ (showPoint3d v) ++ ") {\n" ++ (generateScad3d (i + 1) s) ++ (indent i) ++ "}\n"
-generateScad3d i (Rotate3d s v) = (indent i) ++ "rotate(" ++ (showPoint3d v) ++ ") {\n" ++ (generateScad3d (i + 1) s) ++ (indent i) ++ "}\n"
+generateScad3d i (Rotate3d s n v) = (indent i) ++ "rotate(" ++ (generateScad 0 n) ++ ", "++ (showPoint3d v) ++ ") {\n" ++ (generateScad3d (i + 1) s) ++ (indent i) ++ "}\n"
 generateScad3d i (Scale3d s v) = (indent i) ++ "scale(" ++ (showPoint3d $ abs3 v) ++ ") {\n" ++ (generateScad3d (i + 1) s) ++ (indent i) ++ "}\n"
 generateScad3d i (Resize3d s v) = (indent i) ++ "resize(" ++ (showPoint3d v) ++ ") {\n" ++ (generateScad3d (i + 1) s) ++ (indent i) ++ "}\n"
 generateScad3d i (Mirror3d s v) = (indent i) ++ "mirror(" ++ (showPoint3d v) ++ ") {\n" ++ (generateScad3d (i + 1) s) ++ (indent i) ++ "}\n"

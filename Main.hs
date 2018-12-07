@@ -1,33 +1,17 @@
 module Main where
 
--- import qualified OpenSCAD as S
 import OpenSCAD
 
--- main = writeFile "model.scad" (render model 50)
-main = writeFile "model.scad" (preview model 40)
+main = writeFile "model.scad" (preview animation 40)
 
--- model = translate (color (resize circle (p2 2 2)) red) (p2 2 2)
+animation = model `rotate` (a, (p3 0 1 0)) `translate` (p3 0 0 10)
+    where
+        a = (pi / 6) * (sin $ TimeStep * (2 * pi))
 
--- model = ((color (circle =. (p2 3 5)) red) <-> (p2 1 0)) +. (color circle green)
+model = pendulum `translate` (p3 0 0 (-10))
 
--- model = (sphere `resize` (p3 1 2 2)) -. (sphere `resize` (p3 1.1 0.9 0.9))
+pendulum = stick +. weight
 
-model = sphere `translate` (p3 (cos (2 * pi * TimeStep)) (sin (2 * pi * TimeStep)) 1)
--- model = sphere `translate` (p3 (rtod 3) 0 0)
+stick = cube `scale` (p3 1 1 10) `translate` (p3 0 0 5) `color` green
 
-
--- size = 40
-
--- model :: Shape3d
--- model = (pyramid `color` green) -. (hole `color` blue)
---     where
---         pyramid = (union $ map (\ i -> (layer i) `translate` (p3 0 0 (i * size / 10))) [0..8]) `translate` (p3 0 0 2)
---         hole = (cylinder `resize` (p3 2 2 10)) `translate` (p3 0 0 (size * 0.88))
---         layer i = cube `resize` (p3 (w i) (w i) (h i))
---         w i = size - (i * 4.3)
---         h i = size / 10
-
--- model = Model3d $ extrude ((square 20) +. (translate2d (circle 5) 10 10)) 10
--- model = Model2d $ (square 20) +. (translate2d (circle 5) 10 10)
--- model = (cube 10 20 20) -. (cylinder 3 30)
-
+weight = sphere `scale` (p3 4 4 4) `color` (1, 0, 1, 1)
