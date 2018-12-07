@@ -189,6 +189,12 @@ class Movable a b where
 class Rotatable a b where
     rotate :: a -> b -> a
 
+class Modifiable a where
+    background :: a -> a
+    debug :: a -> a
+    root :: a -> a
+    disable :: a -> a
+
 class GenerateScad a where
     generateScad :: Int -> a -> String
 
@@ -210,6 +216,10 @@ data Shape2d
     | Mirror2d Shape2d Point2d
     | Color2d Shape2d Color
     | Slice Shape3d SliceStyle
+    | Background2d Shape2d
+    | Debug2d Shape2d
+    | Root2d Shape2d
+    | Disable2d Shape2d
     deriving (Show)
 
 data OffsetStyle
@@ -240,6 +250,10 @@ data Shape3d
     | Resize3d Shape3d Point3d
     | Mirror3d Shape3d Point3d
     | Color3d Shape3d Color
+    | Background3d Shape3d
+    | Debug3d Shape3d
+    | Root3d Shape3d
+    | Disable3d Shape3d
     deriving (Show)
 
 data ExtrudeStyle
@@ -280,6 +294,12 @@ instance Movable Shape2d Point2d where
 
 instance Rotatable Shape2d Number where
     rotate s a = Rotate2d s (rtod a)
+
+instance Modifiable Shape2d where
+    background = Background2d
+    debug = Debug2d
+    root = Root2d
+    disable = Disable2d
 
 union2d :: Shape2d -> Shape2d -> Shape2d
 union2d (Union2d as) (Union2d bs) = Union2d (as ++ bs)
@@ -332,6 +352,10 @@ generateScad2d i (Mirror2d s v) = (indent i) ++ "mirror(" ++ (generateScad 0 v) 
 generateScad2d i (Color2d s c) = (indent i) ++ "color(" ++ (generateScad 0 c) ++ ") {\n" ++ (generateScad2d (i + 1) s) ++ (indent i) ++ "}\n"
 generateScad2d i (Slice s Project) = (indent i) ++ "projection() {\n" ++ (generateScad3d (i + 1) s) ++ (indent i) ++ "}\n"
 generateScad2d i (Slice s Cut) = (indent i) ++ "projection(cut = true) {\n" ++ (generateScad3d (i + 1) s) ++ (indent i) ++ "}\n"
+generateScad2d i (Background2d s) = (indent i) ++ "%scale() {\n" ++ (generateScad2d (i + 1) s) ++ (indent i) ++ "}\n"
+generateScad2d i (Debug2d s) = (indent i) ++ "#scale() {\n" ++ (generateScad2d (i + 1) s) ++ (indent i) ++ "}\n"
+generateScad2d i (Root2d s) = (indent i) ++ "!scale() {\n" ++ (generateScad2d (i + 1) s) ++ (indent i) ++ "}\n"
+generateScad2d i (Disable2d s) = (indent i) ++ "*scale() {\n" ++ (generateScad2d (i + 1) s) ++ (indent i) ++ "}\n"
 
 instance GenerateScad Shape3d where
     generateScad = generateScad3d
@@ -359,6 +383,12 @@ instance Movable Shape3d Point3d where
 
 instance Rotatable Shape3d (Number, Point3d) where
     rotate s (a, v) = Rotate3d s (rtod a) v
+
+instance Modifiable Shape3d where
+    background = Background3d
+    debug = Debug3d
+    root = Root3d
+    disable = Disable3d
 
 union3d :: Shape3d -> Shape3d -> Shape3d
 union3d (Union3d as) (Union3d bs) = Union3d (as ++ bs)
@@ -409,6 +439,10 @@ generateScad3d i (Scale3d s v) = (indent i) ++ "scale(" ++ (generateScad 0 $ abs
 generateScad3d i (Resize3d s v) = (indent i) ++ "resize(" ++ (generateScad 0 v) ++ ") {\n" ++ (generateScad3d (i + 1) s) ++ (indent i) ++ "}\n"
 generateScad3d i (Mirror3d s v) = (indent i) ++ "mirror(" ++ (generateScad 0 v) ++ ") {\n" ++ (generateScad3d (i + 1) s) ++ (indent i) ++ "}\n"
 generateScad3d i (Color3d s c) = (indent i) ++ "color(" ++ (generateScad 0 c) ++ ") {\n" ++ (generateScad3d (i + 1) s) ++ (indent i) ++ "}\n"
+generateScad3d i (Background3d s) = (indent i) ++ "%scale() {\n" ++ (generateScad3d (i + 1) s) ++ (indent i) ++ "}\n"
+generateScad3d i (Debug3d s) = (indent i) ++ "#scale() {\n" ++ (generateScad3d (i + 1) s) ++ (indent i) ++ "}\n"
+generateScad3d i (Root3d s) = (indent i) ++ "!scale() {\n" ++ (generateScad3d (i + 1) s) ++ (indent i) ++ "}\n"
+generateScad3d i (Disable3d s) = (indent i) ++ "*scale() {\n" ++ (generateScad3d (i + 1) s) ++ (indent i) ++ "}\n"
 
 mapt2 f (a, b) = (f a, f b)
 
