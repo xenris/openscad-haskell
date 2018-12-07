@@ -4,6 +4,8 @@
 
 module OpenSCAD where
 
+import Data.List
+
 data Number
     = Number Double
     | Add Number Number
@@ -200,7 +202,7 @@ data Shape2d
     | Intersection2d [Shape2d]
     | Minkowski2d [Shape2d]
     | Hull2d [Shape2d]
-    | Offset Shape2d Float OffsetStyle
+    | Offset Shape2d Number OffsetStyle
     | Translate2d Shape2d Point2d
     | Rotate2d Shape2d Number
     | Scale2d Shape2d Point2d
@@ -241,8 +243,8 @@ data Shape3d
     deriving (Show)
 
 data ExtrudeStyle
-    = Straight Float
-    | Twist Float Float
+    = Straight Number
+    | Twist Number Number
     | Rotate
     deriving (Show)
 
@@ -312,22 +314,22 @@ hull2d a b = Hull2d [a, b]
 generateScad2d :: Int -> Shape2d -> String
 generateScad2d i (Circle) = (indent i) ++ "circle();\n"
 generateScad2d i (Square) = (indent i) ++ "square(center = true);\n"
-generateScad2d i (Polygon ps) = (indent i) ++ "polygon(" ++ (showPoint2ds ps) ++ ");\n"
+generateScad2d i (Polygon ps) = (indent i) ++ "polygon(" ++ (generateScad 0 ps) ++ ");\n"
 generateScad2d i (Text s) = (indent i) ++ "text(" ++ (show s) ++ ");\n"
 generateScad2d i (Union2d ss) = (indent i) ++ "union() {\n" ++ (concatMap (generateScad2d (i + 1)) ss) ++ (indent i) ++ "}\n"
 generateScad2d i (Difference2d ss) = (indent i) ++ "difference() {\n" ++ (concatMap (generateScad2d (i + 1)) ss) ++ (indent i) ++ "}\n"
 generateScad2d i (Intersection2d ss) = (indent i) ++ "intersection() {\n" ++ (concatMap (generateScad2d (i + 1)) ss) ++ (indent i) ++ "}\n"
 generateScad2d i (Minkowski2d ss) = (indent i) ++ "minkowski() {\n" ++ (concatMap (generateScad2d (i + 1)) ss) ++ (indent i) ++ "}\n"
 generateScad2d i (Hull2d ss) = (indent i) ++ "hull() {\n" ++ (concatMap (generateScad2d (i + 1)) ss) ++ (indent i) ++ "}\n"
-generateScad2d i (Offset s n Extend) = (indent i) ++ "offset(delta = " ++ (show n) ++ ") {\n" ++ (generateScad2d (i + 1) s) ++ (indent i) ++ "}\n"
-generateScad2d i (Offset s n Round) = (indent i) ++ "offset(r = " ++ (show n) ++ ") {\n" ++ (generateScad2d (i + 1) s) ++ (indent i) ++ "}\n"
-generateScad2d i (Offset s n Chamfer) = (indent i) ++ "offset(delta = " ++ (show n) ++ ", chamfer = true) {\n" ++ (generateScad2d (i + 1) s) ++ (indent i) ++ "}\n"
-generateScad2d i (Translate2d s v) = (indent i) ++ "translate(" ++ (showPoint2d v) ++ ") {\n" ++ (generateScad2d (i + 1) s) ++ (indent i) ++ "}\n"
+generateScad2d i (Offset s n Extend) = (indent i) ++ "offset(delta = " ++ (generateScad 0 n) ++ ") {\n" ++ (generateScad2d (i + 1) s) ++ (indent i) ++ "}\n"
+generateScad2d i (Offset s n Round) = (indent i) ++ "offset(r = " ++ (generateScad 0 n) ++ ") {\n" ++ (generateScad2d (i + 1) s) ++ (indent i) ++ "}\n"
+generateScad2d i (Offset s n Chamfer) = (indent i) ++ "offset(delta = " ++ (generateScad 0 n) ++ ", chamfer = true) {\n" ++ (generateScad2d (i + 1) s) ++ (indent i) ++ "}\n"
+generateScad2d i (Translate2d s v) = (indent i) ++ "translate(" ++ (generateScad 0 v) ++ ") {\n" ++ (generateScad2d (i + 1) s) ++ (indent i) ++ "}\n"
 generateScad2d i (Rotate2d s n) = (indent i) ++ "rotate(" ++ (generateScad 0 n) ++ ") {\n" ++ (generateScad2d (i + 1) s) ++ (indent i) ++ "}\n"
-generateScad2d i (Scale2d s v) = (indent i) ++ "scale(" ++ (showPoint2d $ abs2 v) ++ ") {\n" ++ (generateScad2d (i + 1) s) ++ (indent i) ++ "}\n"
-generateScad2d i (Resize2d s v) = (indent i) ++ "resize(" ++ (showPoint2d v) ++ ") {\n" ++ (generateScad2d (i + 1) s) ++ (indent i) ++ "}\n"
-generateScad2d i (Mirror2d s v) = (indent i) ++ "mirror(" ++ (showPoint2d v) ++ ") {\n" ++ (generateScad2d (i + 1) s) ++ (indent i) ++ "}\n"
-generateScad2d i (Color2d s c) = (indent i) ++ "color(" ++ (showColor c) ++ ") {\n" ++ (generateScad2d (i + 1) s) ++ (indent i) ++ "}\n"
+generateScad2d i (Scale2d s v) = (indent i) ++ "scale(" ++ (generateScad 0 $ abs2 v) ++ ") {\n" ++ (generateScad2d (i + 1) s) ++ (indent i) ++ "}\n"
+generateScad2d i (Resize2d s v) = (indent i) ++ "resize(" ++ (generateScad 0 v) ++ ") {\n" ++ (generateScad2d (i + 1) s) ++ (indent i) ++ "}\n"
+generateScad2d i (Mirror2d s v) = (indent i) ++ "mirror(" ++ (generateScad 0 v) ++ ") {\n" ++ (generateScad2d (i + 1) s) ++ (indent i) ++ "}\n"
+generateScad2d i (Color2d s c) = (indent i) ++ "color(" ++ (generateScad 0 c) ++ ") {\n" ++ (generateScad2d (i + 1) s) ++ (indent i) ++ "}\n"
 generateScad2d i (Slice s Project) = (indent i) ++ "projection() {\n" ++ (generateScad3d (i + 1) s) ++ (indent i) ++ "}\n"
 generateScad2d i (Slice s Cut) = (indent i) ++ "projection(cut = true) {\n" ++ (generateScad3d (i + 1) s) ++ (indent i) ++ "}\n"
 
@@ -392,42 +394,46 @@ generateScad3d :: Int -> Shape3d -> String
 generateScad3d i (Sphere) = (indent i) ++ "sphere(d = 1);\n"
 generateScad3d i (Cube) = (indent i) ++ "cube(center = true);\n"
 generateScad3d i (Cylinder) = (indent i) ++ "cylinder(d = 1, h = 1, center = true);\n"
-generateScad3d i (Polyhedron ps fs) = (indent i) ++ "polyhedron(" ++ (showPoint3ds ps) ++ ", " ++ (show fs) ++ ");\n"
-generateScad3d i (Extrude s (Straight l)) = (indent i) ++ "linear_extrude(height = " ++ (show l) ++ ") {\n" ++ (generateScad2d (i + 1) s) ++ (indent i) ++ "}\n"
-generateScad3d i (Extrude s (Twist l t)) = (indent i) ++ "linear_extrude(height = " ++ (show l) ++ ", twist = " ++ (show t) ++ ") {\n" ++ (generateScad2d (i + 1) s) ++ (indent i) ++ "}\n"
+generateScad3d i (Polyhedron ps fs) = (indent i) ++ "polyhedron(" ++ (generateScad 0 ps) ++ ", " ++ (show fs) ++ ");\n"
+generateScad3d i (Extrude s (Straight l)) = (indent i) ++ "linear_extrude(height = " ++ (generateScad 0 l) ++ ") {\n" ++ (generateScad2d (i + 1) s) ++ (indent i) ++ "}\n"
+generateScad3d i (Extrude s (Twist l t)) = (indent i) ++ "linear_extrude(height = " ++ (generateScad 0 l) ++ ", twist = " ++ (generateScad 0 t) ++ ") {\n" ++ (generateScad2d (i + 1) s) ++ (indent i) ++ "}\n"
 generateScad3d i (Extrude s (Rotate)) = (indent i) ++ "rotate_extrude() {\n" ++ (generateScad2d (i + 1) s) ++ (indent i) ++ "}\n" -- TODO subtract everything below the x axis
 generateScad3d i (Union3d ss) = (indent i) ++ "union() {\n" ++ (concatMap (generateScad3d (i + 1)) ss) ++ (indent i) ++ "}\n"
 generateScad3d i (Difference3d ss) = (indent i) ++ "difference() {\n" ++ (concatMap (generateScad3d (i + 1)) ss) ++ (indent i) ++ "}\n"
 generateScad3d i (Intersection3d ss) = (indent i) ++ "intersection() {\n" ++ (concatMap (generateScad3d (i + 1)) ss) ++ (indent i) ++ "}\n"
 generateScad3d i (Minkowski3d ss) = (indent i) ++ "minkowski() {\n" ++ (concatMap (generateScad3d (i + 1)) ss) ++ (indent i) ++ "}\n"
 generateScad3d i (Hull3d ss) = (indent i) ++ "hull() {\n" ++ (concatMap (generateScad3d (i + 1)) ss) ++ (indent i) ++ "}\n"
-generateScad3d i (Translate3d s v) = (indent i) ++ "translate(" ++ (showPoint3d v) ++ ") {\n" ++ (generateScad3d (i + 1) s) ++ (indent i) ++ "}\n"
-generateScad3d i (Rotate3d s n v) = (indent i) ++ "rotate(" ++ (generateScad 0 n) ++ ", "++ (showPoint3d v) ++ ") {\n" ++ (generateScad3d (i + 1) s) ++ (indent i) ++ "}\n"
-generateScad3d i (Scale3d s v) = (indent i) ++ "scale(" ++ (showPoint3d $ abs3 v) ++ ") {\n" ++ (generateScad3d (i + 1) s) ++ (indent i) ++ "}\n"
-generateScad3d i (Resize3d s v) = (indent i) ++ "resize(" ++ (showPoint3d v) ++ ") {\n" ++ (generateScad3d (i + 1) s) ++ (indent i) ++ "}\n"
-generateScad3d i (Mirror3d s v) = (indent i) ++ "mirror(" ++ (showPoint3d v) ++ ") {\n" ++ (generateScad3d (i + 1) s) ++ (indent i) ++ "}\n"
-generateScad3d i (Color3d s c) = (indent i) ++ "color(" ++ (showColor c) ++ ") {\n" ++ (generateScad3d (i + 1) s) ++ (indent i) ++ "}\n"
+generateScad3d i (Translate3d s v) = (indent i) ++ "translate(" ++ (generateScad 0 v) ++ ") {\n" ++ (generateScad3d (i + 1) s) ++ (indent i) ++ "}\n"
+generateScad3d i (Rotate3d s n v) = (indent i) ++ "rotate(" ++ (generateScad 0 n) ++ ", "++ (generateScad 0 v) ++ ") {\n" ++ (generateScad3d (i + 1) s) ++ (indent i) ++ "}\n"
+generateScad3d i (Scale3d s v) = (indent i) ++ "scale(" ++ (generateScad 0 $ abs3 v) ++ ") {\n" ++ (generateScad3d (i + 1) s) ++ (indent i) ++ "}\n"
+generateScad3d i (Resize3d s v) = (indent i) ++ "resize(" ++ (generateScad 0 v) ++ ") {\n" ++ (generateScad3d (i + 1) s) ++ (indent i) ++ "}\n"
+generateScad3d i (Mirror3d s v) = (indent i) ++ "mirror(" ++ (generateScad 0 v) ++ ") {\n" ++ (generateScad3d (i + 1) s) ++ (indent i) ++ "}\n"
+generateScad3d i (Color3d s c) = (indent i) ++ "color(" ++ (generateScad 0 c) ++ ") {\n" ++ (generateScad3d (i + 1) s) ++ (indent i) ++ "}\n"
 
-showPoint2d :: Point2d -> String
-showPoint2d (x, y) = "[" ++ (generateScad 0 x) ++ ", " ++ (generateScad 0 y) ++ "]"
+mapt2 f (a, b) = (f a, f b)
 
-showPoint2ds :: [Point2d] -> String
-showPoint2ds = replaceBraces . show
+mapt3 f (a, b, c) = (f a, f b, f c)
 
-showPoint3d :: Point3d -> String
-showPoint3d (x, y, z) = "[" ++ (generateScad 0 x) ++ ", " ++ (generateScad 0 y) ++ ", " ++ (generateScad 0 z) ++ "]"
+t2List (a, b) = [a, b]
 
-showPoint3ds :: [Point3d] -> String
-showPoint3ds = replaceBraces . show
+t3List (a, b, c) = [a, b, c]
 
-replaceBraces :: String -> String
-replaceBraces [] = []
-replaceBraces ('(':xs) = '[' : (replaceBraces xs)
-replaceBraces (')':xs) = ']' : (replaceBraces xs)
-replaceBraces (x:xs) = x : (replaceBraces xs)
+t4List (a, b, c, d) = [a, b, c, d]
 
-showColor :: Color -> String
-showColor (r, g, b, a) = "[" ++ (generateScad 0 r) ++ ", " ++ (generateScad 0 g) ++ ", " ++ (generateScad 0 b) ++ ", " ++ (generateScad 0 a) ++ "]"
+instance GenerateScad Point2d where
+    generateScad _ p = "[" ++ (intercalate ", " $ map (generateScad 0) $ t2List p) ++ "]"
+
+instance GenerateScad [Point2d] where
+    generateScad _ ps = "[" ++ (intercalate ", " $ map (generateScad 0) ps) ++ "]"
+
+instance GenerateScad Point3d where
+    generateScad _ p = "[" ++ (intercalate ", " $ map (generateScad 0) $ t3List p) ++ "]"
+
+instance GenerateScad [Point3d] where
+    generateScad _ ps = "[" ++ (intercalate ", " $ map (generateScad 0) ps) ++ "]"
+
+instance GenerateScad Color where
+    generateScad _ p = "[" ++ (intercalate ", " $ map (generateScad 0) $ t4List p) ++ "]"
 
 abs2 :: Point2d -> Point2d
 abs2 (x, y) = (abs x, abs y)
