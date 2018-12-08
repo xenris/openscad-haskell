@@ -499,12 +499,6 @@ indent i = replicate i ' '
 rtod :: Number -> Number
 rtod r = r * (360 / (2 * pi))
 
-rtod2 :: Point2d -> Point2d
-rtod2 (a, b) = (rtod a, rtod b)
-
-rtod3 :: Point3d -> Point3d
-rtod3 (a, b, c) = (rtod a, rtod b, rtod c)
-
 dtor :: Number -> Number
 dtor r = r * ((2 * pi) / 360)
 
