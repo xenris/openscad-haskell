@@ -512,4 +512,5 @@ slice :: Shape3d -> SliceStyle -> Shape2d
 slice = Slice
 
 extrude :: Shape2d -> ExtrudeStyle -> Shape3d
-extrude = Extrude
+extrude s (Twist l a) = Extrude s (Twist l (rtod a))
+extrude s e = Extrude s e
