@@ -332,7 +332,7 @@ hull2d a (Hull2d bs) = Hull2d ([a] ++ bs)
 hull2d a b = Hull2d [a, b]
 
 generateScad2d :: Int -> Shape2d -> String
-generateScad2d i (Circle) = (indent i) ++ "circle();\n"
+generateScad2d i (Circle) = (indent i) ++ "circle(d = 1);\n"
 generateScad2d i (Square) = (indent i) ++ "square(center = true);\n"
 generateScad2d i (Polygon ps) = (indent i) ++ "polygon(" ++ (generateScad 0 ps) ++ ");\n"
 generateScad2d i (Text s) = (indent i) ++ "text(" ++ (show s) ++ ");\n"
