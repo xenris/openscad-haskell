@@ -89,23 +89,40 @@ instance GenerateScad Number where
 
 instance Floating Number where
     pi = Number pi
-    exp = Exp
-    log = Log
-    sqrt = Sqrt
-    (**) = Pow
-    logBase = LogBase
-    sin = Sin . rtod
-    cos = Cos . rtod
-    tan = Tan . rtod
-    asin = dtor . Asin
-    acos = dtor . Acos
-    atan = dtor . Atan
-    sinh = Sinh
-    cosh = Cosh
-    tanh = Tanh
-    asinh = Asinh
-    acosh = Acosh
-    atanh = Atanh
+    exp (Number n) = Number $ exp n
+    exp n = Exp n
+    log (Number n) = Number $ log n
+    log n = Log n
+    sqrt (Number n) = Number $ sqrt n
+    sqrt n = Sqrt n
+    (**) (Number a) (Number b) = Number $ (**) a b
+    (**) a b = Pow a b
+    logBase (Number a) (Number b) = Number $ logBase a b
+    logBase a b = LogBase a b
+    sin (Number n) = Number $ sin n
+    sin n = Sin $ rtod n
+    cos (Number n) = Number $ cos n
+    cos n = Cos $ rtod n
+    tan (Number n) = Number $ tan n
+    tan n = Tan $ rtod n
+    asin (Number n) = Number $ asin n
+    asin n = dtor $ Asin n
+    acos (Number n) = Number $ acos n
+    acos n = dtor $ Acos n
+    atan (Number n) = Number $ atan n
+    atan n = dtor $ Atan n
+    sinh (Number n) = Number $ sinh n
+    sinh n = Sinh n
+    cosh (Number n) = Number $ cosh n
+    cosh n = Cosh n
+    tanh (Number n) = Number $ tanh n
+    tanh n = Tanh n
+    asinh (Number n) = Number $ asinh n
+    asinh n = Asinh n
+    acosh (Number n) = Number $ acosh n
+    acosh n = Acosh n
+    atanh (Number n) = Number $ atanh n
+    atanh n = Atanh n
 
 -- log
 -- atan2
