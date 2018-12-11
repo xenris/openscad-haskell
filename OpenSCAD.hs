@@ -363,7 +363,7 @@ generateScad2d i (Offset s n Round) = (indent i) ++ "offset(r = " ++ (generateSc
 generateScad2d i (Offset s n Chamfer) = (indent i) ++ "offset(delta = " ++ (generateScad 0 n) ++ ", chamfer = true) {\n" ++ (generateScad2d (i + 1) s) ++ (indent i) ++ "}\n"
 generateScad2d i (Translate2d s v) = (indent i) ++ "translate(" ++ (generateScad 0 v) ++ ") {\n" ++ (generateScad2d (i + 1) s) ++ (indent i) ++ "}\n"
 generateScad2d i (Rotate2d s n) = (indent i) ++ "rotate(" ++ (generateScad 0 n) ++ ") {\n" ++ (generateScad2d (i + 1) s) ++ (indent i) ++ "}\n"
-generateScad2d i (Scale2d s v) = (indent i) ++ "scale(" ++ (generateScad 0 $ abs2 v) ++ ") {\n" ++ (generateScad2d (i + 1) s) ++ (indent i) ++ "}\n"
+generateScad2d i (Scale2d s v) = (indent i) ++ "scale(" ++ (generateScad 0 $ map2 abs v) ++ ") {\n" ++ (generateScad2d (i + 1) s) ++ (indent i) ++ "}\n"
 generateScad2d i (Resize2d s v) = (indent i) ++ "resize(" ++ (generateScad 0 v) ++ ") {\n" ++ (generateScad2d (i + 1) s) ++ (indent i) ++ "}\n"
 generateScad2d i (Mirror2d s v) = (indent i) ++ "mirror(" ++ (generateScad 0 v) ++ ") {\n" ++ (generateScad2d (i + 1) s) ++ (indent i) ++ "}\n"
 generateScad2d i (Color2d s c) = (indent i) ++ "color(" ++ (generateScad 0 c) ++ ") {\n" ++ (generateScad2d (i + 1) s) ++ (indent i) ++ "}\n"
@@ -452,7 +452,7 @@ generateScad3d i (Minkowski3d ss) = (indent i) ++ "minkowski() {\n" ++ (concatMa
 generateScad3d i (Hull3d ss) = (indent i) ++ "hull() {\n" ++ (concatMap (generateScad3d (i + 1)) ss) ++ (indent i) ++ "}\n"
 generateScad3d i (Translate3d s v) = (indent i) ++ "translate(" ++ (generateScad 0 v) ++ ") {\n" ++ (generateScad3d (i + 1) s) ++ (indent i) ++ "}\n"
 generateScad3d i (Rotate3d s n v) = (indent i) ++ "rotate(" ++ (generateScad 0 n) ++ ", "++ (generateScad 0 v) ++ ") {\n" ++ (generateScad3d (i + 1) s) ++ (indent i) ++ "}\n"
-generateScad3d i (Scale3d s v) = (indent i) ++ "scale(" ++ (generateScad 0 $ abs3 v) ++ ") {\n" ++ (generateScad3d (i + 1) s) ++ (indent i) ++ "}\n"
+generateScad3d i (Scale3d s v) = (indent i) ++ "scale(" ++ (generateScad 0 $ map3 abs v) ++ ") {\n" ++ (generateScad3d (i + 1) s) ++ (indent i) ++ "}\n"
 generateScad3d i (Resize3d s v) = (indent i) ++ "resize(" ++ (generateScad 0 v) ++ ") {\n" ++ (generateScad3d (i + 1) s) ++ (indent i) ++ "}\n"
 generateScad3d i (Mirror3d s v) = (indent i) ++ "mirror(" ++ (generateScad 0 v) ++ ") {\n" ++ (generateScad3d (i + 1) s) ++ (indent i) ++ "}\n"
 generateScad3d i (Color3d s c) = (indent i) ++ "color(" ++ (generateScad 0 c) ++ ") {\n" ++ (generateScad3d (i + 1) s) ++ (indent i) ++ "}\n"
@@ -461,9 +461,9 @@ generateScad3d i (Debug3d s) = (indent i) ++ "#scale() {\n" ++ (generateScad3d (
 generateScad3d i (Root3d s) = (indent i) ++ "!scale() {\n" ++ (generateScad3d (i + 1) s) ++ (indent i) ++ "}\n"
 generateScad3d i (Disable3d s) = (indent i) ++ "*scale() {\n" ++ (generateScad3d (i + 1) s) ++ (indent i) ++ "}\n"
 
-mapt2 f (a, b) = (f a, f b)
+map2 f (a, b) = (f a, f b)
 
-mapt3 f (a, b, c) = (f a, f b, f c)
+map3 f (a, b, c) = (f a, f b, f c)
 
 t2List (a, b) = [a, b]
 
@@ -485,12 +485,6 @@ instance GenerateScad [Point3d] where
 
 instance GenerateScad Color where
     generateScad _ p = "[" ++ (intercalate ", " $ map (generateScad 0) $ t4List p) ++ "]"
-
-abs2 :: Point2d -> Point2d
-abs2 (x, y) = (abs x, abs y)
-
-abs3 :: Point3d -> Point3d
-abs3 (x, y, z) = (abs x, abs y, abs z)
 
 square :: Shape2d
 square = Square
